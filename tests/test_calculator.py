@@ -1,5 +1,5 @@
 import pytest
-from calculator_ops import add, sub, mul, div
+from Calculator_ops import add, sub, mul, div
 
 
 def test_add():
