@@ -17,5 +17,5 @@ EXPOSE 5000
 ENV FLASK_APP=Calculator.py
 
 #Run the flask app
-# CMD ["python", "app.py"]
+#CMD ["python", "Calculator.py"]
 CMD ["flask", "run", "--host=0.0.0.0"]
