@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request
+from Calculator_ops import add, sub, mul, div
 
 Calculator = Flask(__name__)
 
@@ -13,19 +14,16 @@ def home():
             operation = request.form.get("operation")
 
             if operation == "add":
-                result = num1 + num2
+                result = add(num1, num2)
             elif operation == "sub":
-                result = num1 - num2
+                result = sub(num1, num2)
             elif operation == "mul":
-                result = num1 * num2
+                result = mul(num1, num2)
             elif operation == "div":
-                if num2 == 0:
-                    result = "Error: Division by zero"
-                else:
-                    result = num1 / num2
+                result = div(num1, num2)
 
-        except:
-            result = "Invalid input"
+        except Exception as e:
+            result = str(e)
 
     return render_template("index.html", result=result)
 

@@ -1,82 +1,27 @@
-import sys
-import os
-
-# Add "web calculator" directory to Python path
-sys.path.append(
-    os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..", "web calculator")
-    )
-)
-
-from Calculator import Calculator   # importing Flask app
-from Calculator import add, sub, mul, div
+import pytest
+from calculator_ops import add, sub, mul, div
 
 
-def test_addition():
-    client = Calculator.test_client()
-    response = client.post(
-        "/",
-        data={
-            "num1": "10",
-            "num2": "5",
-            "operation": "add"
-        }
-    )
-    assert response.status_code == 200
-    assert b"15" in response.data
+def test_add():
+    assert add(2, 3) == 5
+    assert add(-1, 1) == 0
 
 
-def test_subtraction():
-    client = Calculator.test_client()
-    response = client.post(
-        "/",
-        data={
-            "num1": "10",
-            "num2": "5",
-            "operation": "sub"
-        }
-    )
-    assert response.status_code == 200
-    assert b"5" in response.data
+def test_sub():
+    assert sub(5, 3) == 2
+    assert sub(3, 5) == -2
 
 
-def test_multiplication():
-    client = Calculator.test_client()
-    response = client.post(
-        "/",
-        data={
-            "num1": "4",
-            "num2": "5",
-            "operation": "mul"
-        }
-    )
-    assert response.status_code == 200
-    assert b"20" in response.data
+def test_mul():
+    assert mul(4, 3) == 12
+    assert mul(-2, 3) == -6
 
 
-def test_division():
-    client = Calculator.test_client()
-    response = client.post(
-        "/",
-        data={
-            "num1": "10",
-            "num2": "2",
-            "operation": "div"
-        }
-    )
-    assert response.status_code == 200
-    assert b"5.0" in response.data
+def test_div():
+    assert div(10, 2) == 5
+    assert div(9, 3) == 3
 
 
-def test_division_by_zero():
-    client = Calculator.test_client()
-    response = client.post(
-        "/",
-        data={
-            "num1": "10",
-            "num2": "0",
-            "operation": "div"
-        }
-    )
-    assert response.status_code == 200
-    assert b"Error: Division by zero" in response.data
+def test_div_by_zero():
+    with pytest.raises(ValueError):
+        div(10, 0)
