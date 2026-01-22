@@ -9,6 +9,7 @@ sys.path.append(
 )
 
 from Calculator import Calculator   # importing Flask app
+from Calculator import add, sub, mul, div
 
 
 def test_addition():
