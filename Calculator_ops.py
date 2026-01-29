@@ -7,21 +7,21 @@ def add(a, b):
         return "Invalid input"
 
 
-def subtract(a, b):
+def sub(a, b):
     try:
         return a - b
     except TypeError:
         return "Invalid input"
 
 
-def multiply(a, b):
+def mul(a, b):
     try:
         return a * b
     except TypeError:
         return "Invalid input"
 
 
-def divide(a, b):
+def div(a, b):
     try:
         return a / b
     except ZeroDivisionError:
