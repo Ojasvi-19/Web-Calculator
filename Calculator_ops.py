@@ -25,6 +25,6 @@ def div(a, b):
     try:
         return a / b
     except ZeroDivisionError:
-        return "Cannot divide by zero"
+        raise ValueError("Cannot divide by zero")
     except TypeError:
-        return "Invalid input"
+        raise ValueError("Invalid input")
