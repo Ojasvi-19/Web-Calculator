@@ -22,7 +22,7 @@ pipeline {
                 docker run --rm \
                 web-calculator:${BUILD_NUMBER} \
                 pytest tests \
-                --cov=calculator \
+                --cov=calculator_ops \
                 --cov-report=term \
                 --cov-report=xml
                 '''
