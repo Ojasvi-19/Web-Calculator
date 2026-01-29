@@ -1,13 +1,30 @@
+# calculator.py
+
 def add(a, b):
-    return a + b
+    try:
+        return a + b
+    except TypeError:
+        return "Invalid input"
 
-def sub(a, b):
-    return a - b
 
-def mul(a, b):
-    return a * b
+def subtract(a, b):
+    try:
+        return a - b
+    except TypeError:
+        return "Invalid input"
 
-def div(a, b):
-    if b == 0:
-        raise ValueError("Division by zero")
-    return a / b
+
+def multiply(a, b):
+    try:
+        return a * b
+    except TypeError:
+        return "Invalid input"
+
+
+def divide(a, b):
+    try:
+        return a / b
+    except ZeroDivisionError:
+        return "Cannot divide by zero"
+    except TypeError:
+        return "Invalid input"

@@ -21,7 +21,10 @@ pipeline {
                 sh '''
                 docker run --rm \
                 web-calculator:${BUILD_NUMBER} \
-                python -m pytest --cov=. --cov-report=term-missing
+                pytest tests \
+                --cov=calculator \
+                --cov-report=term \
+                --cov-report=xml
                 '''
             }
         }
