@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        PYTHON = 'python3' // change to 'python' if using Windows
-    }
-
     stages {
 
         stage('Checkout Code') {
@@ -17,32 +13,33 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 // Upgrade pip and install dependencies including PyInstaller
-                sh "${env.PYTHON} -m pip install --upgrade pip"
-                sh "${env.PYTHON} -m pip install -r Requirements.txt"
+                bat 'python -m pip install --upgrade pip'
+                bat 'pip install -r requirements.txt'
             }
         }
 
         stage('Build Executable') {
             steps {
                 // Build executable using PyInstaller
-                sh "pyinstaller --onefile --name WebCalculator Calculator.py"
+                bat 'pyinstaller --onefile --name WebCalculator main.py'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t web-calculator:${BUILD_NUMBER} .'
+                // Make sure Docker is installed and added to PATH on the agent
+                bat 'docker build -t web-calculator:%BUILD_NUMBER% .'
             }
         }
 
         stage('Run Unit Tests & Coverage') {
             steps {
-                sh '''
-                docker run --rm \
-                web-calculator:${BUILD_NUMBER} \
-                pytest tests \
-                --cov=calculator_ops \
-                --cov-report=term \
+                bat '''
+                docker run --rm ^
+                web-calculator:%BUILD_NUMBER% ^
+                pytest tests ^
+                --cov=calculator_ops ^
+                --cov-report=term ^
                 --cov-report=xml
                 '''
             }
@@ -50,8 +47,8 @@ pipeline {
 
         stage('Archive Executable') {
             steps {
-                // Save the built executable as a Jenkins artifact
-                archiveArtifacts artifacts: 'dist/WebCalculator*', fingerprint: true
+                // Archive the built executable as a Jenkins artifact
+                archiveArtifacts artifacts: 'dist\\WebCalculator*', fingerprint: true
             }
         }
     }
