@@ -10,16 +10,14 @@ pipeline {
             }
         }
 
-        stage('Setup Python & Pip') {
+        stage('Setup Python & Virtualenv') {
             steps {
                 sh '''
-                if ! python3 -m pip --version > /dev/null 2>&1; then
-                    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-                    python3 get-pip.py
-                fi
-                python3 -m pip install --upgrade pip
-                python3 -m pip install -r requirements.txt
-                python3 -m pip install pyinstaller
+                python3 -m venv venv
+                source venv/bin/activate
+                python -m pip install --upgrade pip
+                python -m pip install -r requirements.txt
+                python -m pip install pyinstaller
                 '''
             }
         }
@@ -27,6 +25,7 @@ pipeline {
         stage('Build Binary (PyInstaller)') {
             steps {
                 sh '''
+                source venv/bin/activate
                 rm -rf build dist CalculatorApp.spec
                 pyinstaller --onefile --add-data "templates:templates" --add-data "static:static" --name CalculatorApp Calculator.py
                 '''
