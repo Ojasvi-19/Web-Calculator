@@ -26,6 +26,7 @@ pipeline {
             }
         }
 
+
         stage('Archive PyInstaller Artifact') {
             steps {
                 archiveArtifacts artifacts: 'dist/*', fingerprint: true
