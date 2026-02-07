@@ -21,7 +21,7 @@ pipeline {
                 pip install --upgrade pip &&
                 pip install -r Requirements.txt &&
                 pip install pyinstaller &&
-                pyinstaller --clean --onefile calculator.py
+                pyinstaller --clean --onefile Calculator.py
                 "
                 '''
             }
