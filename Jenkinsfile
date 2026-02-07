@@ -45,8 +45,7 @@ pipeline {
 
                     echo "Build complete. dist contents:"
                     ls -l dist
-                    '''
-                }
+                '''
             }
         }
 
