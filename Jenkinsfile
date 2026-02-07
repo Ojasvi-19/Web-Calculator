@@ -1,11 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        PYTHON = 'python3'
-        PATH = "${env.HOME}/.local/bin:${env.PATH}" // ensures pip is found
-    }
-
     stages {
 
         stage('Checkout Code') {
@@ -15,22 +10,17 @@ pipeline {
             }
         }
 
-        stage('Install pip & Dependencies') {
+        // PyInstaller stage from the Jenkins tutorial
+        stage('PyInstaller Build') {
             steps {
-                // Install pip locally and upgrade it
-                sh '${PYTHON} -m ensurepip --upgrade --user'
-                sh '${PYTHON} -m pip install --upgrade --user pip'
-                
-                // Install project dependencies and PyInstaller
-                sh '${PYTHON} -m pip install --user -r Requirements.txt'
-                sh '${PYTHON} -m pip install --user pyinstaller'
+                // Run PyInstaller to bundle your app into a single executable
+                sh 'pyinstaller --onefile Calculator.py'
             }
-        }
-
-        stage('Build Executable') {
-            steps {
-                // Build Linux executable using PyInstaller
-                sh 'pyinstaller --onefile --name WebCalculator Calculator.py'
+            post {
+                success {
+                    // Archive the built executable
+                    archiveArtifacts artifacts: 'dist/main', fingerprint: true
+                }
             }
         }
 
@@ -52,12 +42,6 @@ pipeline {
                 '''
             }
         }
-
-        stage('Archive Executable') {
-            steps {
-                archiveArtifacts artifacts: 'dist/WebCalculator*', fingerprint: true
-            }
-        }
     }
 
     post {
@@ -69,4 +53,6 @@ pipeline {
         }
     }
 }
+
+
 
