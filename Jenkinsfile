@@ -10,19 +10,20 @@ pipeline {
             }
         }
 
-        stage('Build Binary using PyInstaller (Docker)') {
+        stage('Build Binary (PyInstaller)') {
+            agent {
+                docker {
+                    image 'python:3.10-slim'
+                    args '-u root'
+                }
+            }
             steps {
                 sh '''
-                docker run --rm \
-                -v $(pwd):/web-calculator \
-                -w /web-calculator \
-                python:3.9-slim \
-                sh -c "
-                pip install --upgrade pip &&
-                pip install -r Requirements.txt &&
-                pip install pyinstaller &&
-                pyinstaller --clean --onefile Calculator.py
-                "
+                cd Web-Calculator
+                python3 -m pip install --upgrade pip
+                pip install -r Requirements.txt
+                pip install pyinstaller
+                pyinstaller --onefile --add-data "templates:templates" Calculator.py
                 '''
             }
         }
