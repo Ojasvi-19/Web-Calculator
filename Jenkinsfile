@@ -14,8 +14,8 @@ pipeline {
             steps {
                 sh '''
                 docker run --rm \
-                -v $(pwd):/app \
-                -w /app \
+                -v $(pwd):/web-calculator \
+                -w /web-calculator \
                 python:3.9-slim \
                 sh -c "
                 pip install --upgrade pip &&
