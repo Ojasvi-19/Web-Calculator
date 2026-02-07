@@ -22,27 +22,20 @@ pipeline {
 
         stage('Build Executable with PyInstaller') {
             steps {
-                script {
-                    docker.image('python:3.10-slim').inside {
-                        sh '''
-                        set -e
+                sh '''
+                set -e
 
-                        echo "Inside container:"
-                        pwd
-                        ls -l
+                if [ ! -f Calculator.py ]; then
+                  echo "❌ Calculator.py NOT FOUND"
+                  exit 1
+                fi
 
-                        if [ ! -f Calculator.py ]; then
-                          echo "Calculator.py NOT FOUND"
-                          exit 1
-                        fi
-                        apt-get update
-                        apt-get install -y binutils
-                        pip install --no-cache-dir pyinstaller
+                python3 --version || true
 
-                        pyinstaller --onefile Calculator.py
-                        '''
-                    }
-                }
+                pip install --user pyinstaller
+
+                ~/.local/bin/pyinstaller --onefile Calculator.py
+                '''
             }
         }
 
@@ -71,16 +64,8 @@ pipeline {
             }
         }
     }
-
-    post {
-        success {
-            echo "Pipeline executed successfully"
-        }
-        failure {
-            echo "Pipeline failed"
-        }
-    }
 }
+
 
 
 
