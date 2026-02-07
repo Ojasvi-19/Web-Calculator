@@ -16,7 +16,7 @@ pipeline {
                     echo "Workspace is: $WORKSPACE"
                     pwd
                     ls -R
-                    '''
+                '''
             }
         }
 
