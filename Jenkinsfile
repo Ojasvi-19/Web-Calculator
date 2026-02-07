@@ -16,7 +16,7 @@ pipeline {
                 echo "Workspace path:"
                 pwd
                 echo "Workspace contents:"
-                ls -R
+                ls -l
                 '''
             }
         }
@@ -28,10 +28,13 @@ pipeline {
                   -v "$WORKSPACE:/app" \
                   -w /app \
                   python:3.10-slim sh -c "
+                    set -e &&
                     apt-get update &&
                     apt-get install -y binutils &&
                     pip install --no-cache-dir pyinstaller &&
-                    pyinstaller --onefile Calculator.py
+                    echo 'Files inside container:' &&
+                    ls -l &&
+                    pyinstaller --onefile ./Calculator.py
                   "
                 '''
             }
@@ -72,6 +75,7 @@ pipeline {
         }
     }
 }
+
 
 
 
