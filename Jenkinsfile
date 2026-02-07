@@ -18,6 +18,8 @@ pipeline {
                   -w /app \
                   python:3.10-slim \
                   sh -c "
+                    apt-get update &&
+                    apt-get install -y --no-install-recommends binutils &&
                     pip install --no-cache-dir pyinstaller &&
                     pyinstaller --onefile Calculator.py
                   "
@@ -49,17 +51,7 @@ pipeline {
                 '''
             }
         }
-    }
 
-    post {
-        success {
-            echo "Pipeline executed successfully"
-        }
-        failure {
-            echo "Pipeline failed"
-        }
-    }
-}
 
 
 
