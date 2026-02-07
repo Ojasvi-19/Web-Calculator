@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         PYTHON = 'python3'
+        PATH = "${env.HOME}/.local/bin:${env.PATH}" // ensures pip is found
     }
 
     stages {
@@ -14,19 +15,22 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Install pip & Dependencies') {
             steps {
-                // Upgrade pip and install dependencies including PyInstaller
-                sh '${PYTHON} -m pip install --upgrade pip'
-                sh '${PYTHON} -m pip install -r requirements.txt'
-                sh '${PYTHON} -m pip install pyinstaller'
+                // Install pip locally and upgrade it
+                sh '${PYTHON} -m ensurepip --upgrade --user'
+                sh '${PYTHON} -m pip install --upgrade --user pip'
+                
+                // Install project dependencies and PyInstaller
+                sh '${PYTHON} -m pip install --user -r Requirements.txt'
+                sh '${PYTHON} -m pip install --user pyinstaller'
             }
         }
 
         stage('Build Executable') {
             steps {
                 // Build Linux executable using PyInstaller
-                sh 'pyinstaller --onefile --name WebCalculator main.py'
+                sh 'pyinstaller --onefile --name WebCalculator Calculator.py'
             }
         }
 
@@ -51,7 +55,6 @@ pipeline {
 
         stage('Archive Executable') {
             steps {
-                // Save the built Linux executable as a Jenkins artifact
                 archiveArtifacts artifacts: 'dist/WebCalculator*', fingerprint: true
             }
         }
