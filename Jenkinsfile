@@ -23,19 +23,30 @@ pipeline {
         stage('Build Executable with PyInstaller') {
             steps {
                 sh '''
-                set -e
+                    set -e
 
-                if [ ! -f Calculator.py ]; then
-                  echo "❌ Calculator.py NOT FOUND"
-                  exit 1
-                fi
+                    echo "Python version:"
+                    python3 --version
 
-                python3 --version || true
+                    echo "Ensuring pip..."
+                    python3 -m ensurepip --upgrade
 
-                pip install --user pyinstaller
+                    echo "Upgrading pip..."
+                    python3 -m pip install --upgrade pip
 
-                ~/.local/bin/pyinstaller --onefile Calculator.py
-                '''
+                    echo "Installing PyInstaller..."
+                    python3 -m pip install --user pyinstaller
+
+                    echo "Verifying Calculator.py..."
+                    ls -l Calculator.py
+
+                    echo "Building executable..."
+                    ~/.local/bin/pyinstaller --onefile Calculator.py
+
+                    echo "Build complete. dist contents:"
+                    ls -l dist
+                    '''
+                }
             }
         }
 
