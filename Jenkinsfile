@@ -14,10 +14,12 @@ pipeline {
             steps {
                 sh '''
                 python3 --version
-                python3 -m ensurepip --upgrade || true
-                python3 -m pip install --upgrade pip
-                python3 -m pip install -r requirements.txt
-                python3 -m pip install pyinstaller
+                apt-get update
+                apt-get install -y python3-pip
+                pip3 --version
+                pip3 install --upgrade pip
+                pip3 install -r requirements.txt
+                pip3 install pyinstaller
                 '''
             }
         }
