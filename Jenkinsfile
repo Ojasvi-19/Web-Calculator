@@ -10,34 +10,6 @@ pipeline {
             }
         }
 
-        stage('Setup Python & Virtualenv') {
-            steps {
-                sh '''
-                python3 -m venv venv
-                source venv/bin/activate
-                python -m pip install --upgrade pip
-                python -m pip install -r requirements.txt
-                python -m pip install pyinstaller
-                '''
-            }
-        }
-
-        stage('Build Binary (PyInstaller)') {
-            steps {
-                sh '''
-                source venv/bin/activate
-                rm -rf build dist CalculatorApp.spec
-                pyinstaller --onefile --add-data "templates:templates" --add-data "static:static" --name CalculatorApp Calculator.py
-                '''
-            }
-        }
-
-        stage('Archive Artifact') {
-            steps {
-                archiveArtifacts artifacts: 'dist/*', fingerprint: true
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t web-calculator:${BUILD_NUMBER} .'
