@@ -10,42 +10,6 @@ pipeline {
             }
         }
 
-        stage('Verify Workspace') {
-            steps {
-                sh '''
-                echo "Workspace:"
-                pwd
-                ls -l
-                '''
-            }
-        }
-
-        stage('Build Executable with PyInstaller') {
-            steps {
-                script {
-                    docker.image('python:3.10-slim').inside {
-                        sh '''
-                        set -e
-
-                        echo "Inside container:"
-                        pwd
-                        ls -l
-
-                        if [ ! -f Calculator.py ]; then
-                          echo "Calculator.py NOT FOUND"
-                          exit 1
-                        fi
-                        apt-get update
-                        apt-get install -y binutils
-                        pip install --no-cache-dir pyinstaller
-
-                        pyinstaller --onefile Calculator.py
-                        '''
-                    }
-                }
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t web-calculator:${BUILD_NUMBER} .'
@@ -56,21 +20,13 @@ pipeline {
             steps {
                 sh '''
                 docker run --rm \
-                  web-calculator:${BUILD_NUMBER} \
-                  pytest tests \
-                  --cov=Calculator_ops \
-                  --cov-report=term \
-                  --cov-report=xml
+                web-calculator:${BUILD_NUMBER} \
+                pytest tests \
+                --cov \
+                --cov-report=term
                 '''
             }
         }
-
-        stage('Archive Executable') {
-            steps {
-                archiveArtifacts artifacts: 'dist/*', fingerprint: true
-            }
-        }
-    }
 
     post {
         success {
