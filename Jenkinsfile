@@ -12,15 +12,14 @@ pipeline {
 
         stage('Build Binary (PyInstaller)') {
             steps {
-                script {
-                    docker.image('python:3.10-slim').inside("-u root -v /host/path/Calculator:/workspace"){
-                        sh '''
-                        cd /workspace/Web-Calculator
-                        python3 -m pip install --upgrade pip
-                        pip install -r Requirements.txt
-                        pip install pyinstaller
-                        pyinstaller --onefile --add-data "templates:templates" Calculator.py
-                        '''
+                dir("${env.WORKSPACE}/Web-Calculator"){
+                    sh '''
+                    cd /workspace/Web-Calculator
+                    python3 -m pip install --upgrade pip
+                    pip install -r Requirements.txt
+                    pip install pyinstaller
+                    pyinstaller --onefile --add-data "templates:templates" Calculator.py
+                    '''
                     }
                 }
             }
