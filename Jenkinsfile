@@ -10,6 +10,15 @@ pipeline {
             }
         }
 
+        stage('Verify Files') {
+            steps {
+                sh '''
+                echo "Workspace contents:"
+                ls -la
+                '''
+            }
+        }
+
         stage('Build Executable with PyInstaller') {
             steps {
                 sh '''
@@ -38,9 +47,8 @@ pipeline {
                 docker run --rm \
                 web-calculator:${BUILD_NUMBER} \
                 pytest tests \
-                --cov=calculator_ops \
-                --cov-report=term \
-                --cov-report=xml
+                --cov \
+                --cov-report=term
                 '''
             }
         }
