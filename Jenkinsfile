@@ -12,14 +12,12 @@ pipeline {
 
         stage('Build Binary (PyInstaller)') {
             steps {
-                dir("${env.WORKSPACE}/Web-Calculator"){
+                dir("/path/to/Calculator/Web-Calculator") {
                     sh '''
                     python3 -m pip install --upgrade pip
                     pip install -r Requirements.txt
-                    pip install pyinstaller
                     pyinstaller --onefile --add-data "templates:templates" Calculator.py
                     '''
-                    }
                 }
             }
         }
