@@ -10,17 +10,24 @@ pipeline {
             }
         }
 
-        // PyInstaller stage from the Jenkins tutorial
-        stage('PyInstaller Build') {
+        stage('Build Executable (PyInstaller)') {
             steps {
-                // Run PyInstaller to bundle your app into a single executable
-                sh 'pyinstaller --onefile Calculator.py'
+                sh '''
+                docker run --rm \
+                  -v "$PWD":/app \
+                  -w /app \
+                  python:3.10-slim \
+                  sh -c "
+                    pip install --no-cache-dir pyinstaller &&
+                    pyinstaller --onefile Calculator.py
+                  "
+                '''
             }
-            post {
-                success {
-                    // Archive the built executable
-                    archiveArtifacts artifacts: 'dist/main', fingerprint: true
-                }
+        }
+
+        stage('Archive Executable') {
+            steps {
+                archiveArtifacts artifacts: 'dist/*', fingerprint: true
             }
         }
 
@@ -53,6 +60,7 @@ pipeline {
         }
     }
 }
+
 
 
 
