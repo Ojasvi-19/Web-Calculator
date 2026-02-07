@@ -13,9 +13,8 @@ pipeline {
         stage('Verify Workspace') {
             steps {
                 sh '''
-                echo "=== Jenkins workspace ==="
+                echo "Workspace:"
                 pwd
-                echo "=== Jenkins workspace contents ==="
                 ls -l
                 '''
             }
@@ -23,29 +22,27 @@ pipeline {
 
         stage('Build Executable with PyInstaller') {
             steps {
-                sh '''
-                docker run --rm \
-                  -v "$WORKSPACE:/app" \
-                  python:3.10-slim sh -c '
-                    set -e
-                    echo "=== Inside container ==="
-                    pwd
-                    ls -l /app
+                script {
+                    docker.image('python:3.10-slim').inside {
+                        sh '''
+                        set -e
 
-                    cd /app
+                        echo "Inside container:"
+                        pwd
+                        ls -l
 
-                    if [ ! -f Calculator.py ]; then
-                      echo "Calculator.py NOT FOUND in /app"
-                      exit 1
-                    fi
+                        if [ ! -f Calculator.py ]; then
+                          echo "Calculator.py NOT FOUND"
+                          exit 1
+                        fi
+                        apt-get update
+                        apt-get install -y binutils
+                        pip install --no-cache-dir pyinstaller
 
-                    apt-get update
-                    apt-get install -y binutils
-                    pip install --no-cache-dir pyinstaller
-
-                    pyinstaller --onefile Calculator.py
-                  '
-                '''
+                        pyinstaller --onefile Calculator.py
+                        '''
+                    }
+                }
             }
         }
 
@@ -84,6 +81,7 @@ pipeline {
         }
     }
 }
+
 
 
 
