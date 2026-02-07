@@ -10,14 +10,13 @@ pipeline {
             }
         }
 
-        stage('Deliver') {
+        stage('Verify Workspace Files') {
             steps {
-                sh "pyinstaller --onefile sources/add2vals.py"
-            }
-            post {
-                success {
-                    archiveArtifacts 'dist/add2vals'
-                }
+                sh '''
+                    echo "Workspace is: $WORKSPACE"
+                    pwd
+                    ls -R
+                    '''
             }
         }
 
@@ -38,13 +37,6 @@ pipeline {
                 '''
             }
         }
-
-        stage('Archive Executable') {
-            steps {
-                archiveArtifacts artifacts: 'dist/Calculator', fingerprint: true
-            }
-        }
-    }
 
     post {
         success {
