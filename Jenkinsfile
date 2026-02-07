@@ -10,59 +10,49 @@ pipeline {
             }
         }
 
-        stage('Setup Python & PyInstaller') {
+        stage('Setup Python & Pip') {
             steps {
-                dir('Web-Calculator') {
-                    bat '''
-                    REM Download get-pip.py if pip not installed
-                    IF NOT EXIST get-pip.py (
-                        curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-                    )
-
-                    REM Install pip and upgrade
-                    python get-pip.py
-                    python -m pip install --upgrade pip
-
-                    REM Install required Python packages
-                    python -m pip install -r requirements.txt
-
-                    REM Install PyInstaller
-                    python -m pip install pyinstaller
-                    '''
-                }
+                sh '''
+                if ! python3 -m pip --version > /dev/null 2>&1; then
+                    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+                    python3 get-pip.py
+                fi
+                python3 -m pip install --upgrade pip
+                python3 -m pip install -r requirements.txt
+                python3 -m pip install pyinstaller
+                '''
             }
         }
 
         stage('Build Binary (PyInstaller)') {
             steps {
-                dir('Web-Calculator') {
-                    bat '''
-                    pyinstaller --onefile --add-data "templates;templates" --add-data "static;static" --name CalculatorApp Calculator.py
-                    '''
-                }
+                sh '''
+                rm -rf build dist CalculatorApp.spec
+                pyinstaller --onefile --add-data "templates:templates" --add-data "static:static" --name CalculatorApp Calculator.py
+                '''
             }
         }
 
-        stage('Archive PyInstaller Artifact') {
+        stage('Archive Artifact') {
             steps {
-                archiveArtifacts artifacts: 'Web-Calculator\\dist\\*', fingerprint: true
+                archiveArtifacts artifacts: 'dist/*', fingerprint: true
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t web-calculator:%BUILD_NUMBER% .'
+                sh 'docker build -t web-calculator:${BUILD_NUMBER} .'
             }
         }
 
         stage('Run Unit Tests & Coverage') {
             steps {
-                bat '''
-                docker run --rm ^
-                web-calculator:%BUILD_NUMBER% ^
-                pytest tests ^
-                --cov=calculator_ops ^
-                --cov-report=term ^
+                sh '''
+                docker run --rm \
+                web-calculator:${BUILD_NUMBER} \
+                pytest tests \
+                --cov=calculator_ops \
+                --cov-report=term \
                 --cov-report=xml
                 '''
             }
