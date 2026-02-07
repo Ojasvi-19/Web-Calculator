@@ -14,7 +14,6 @@ pipeline {
             steps {
                 dir("${env.WORKSPACE}/Web-Calculator"){
                     sh '''
-                    cd /workspace/Web-Calculator
                     python3 -m pip install --upgrade pip
                     pip install -r Requirements.txt
                     pip install pyinstaller
@@ -24,7 +23,6 @@ pipeline {
                 }
             }
         }
-
 
         stage('Archive PyInstaller Artifact') {
             steps {
