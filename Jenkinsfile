@@ -5,31 +5,24 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
-                git branch: env.BRANCH_NAME,
+                git branch: 'main',
                     url: 'https://github.com/Ojasvi-19/Web-Calculator.git'
             }
         }
 
-        stage('Build Executable (PyInstaller)') {
+        stage('Build Executable with PyInstaller') {
             steps {
                 sh '''
                 docker run --rm \
                   -v "$PWD":/app \
                   -w /app \
-                  python:3.10-slim \
-                  sh -c "
+                  python:3.10-slim sh -c "
                     apt-get update &&
-                    apt-get install -y --no-install-recommends binutils &&
+                    apt-get install -y binutils &&
                     pip install --no-cache-dir pyinstaller &&
                     pyinstaller --onefile Calculator.py
                   "
                 '''
-            }
-        }
-
-        stage('Archive Executable') {
-            steps {
-                archiveArtifacts artifacts: 'dist/*', fingerprint: true
             }
         }
 
@@ -51,6 +44,24 @@ pipeline {
                 '''
             }
         }
+
+        stage('Archive Executable') {
+            steps {
+                archiveArtifacts artifacts: 'dist/Calculator', fingerprint: true
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline executed successfully"
+        }
+        failure {
+            echo "Pipeline failed"
+        }
+    }
+}
+
 
 
 
