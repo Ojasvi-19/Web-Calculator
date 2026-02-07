@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from Calculator_ops import add,sub,mul,div
+from Calculator_ops import add, sub, mul, div
 
 Calculator = Flask(__name__)
 
@@ -28,6 +28,7 @@ def home():
     return render_template("index.html", result=result)
 
 if __name__ == "__main__":
-    Calculator.run(debug=True)
+    Calculator.run(host="0.0.0.0", port=5000)
+
 
 

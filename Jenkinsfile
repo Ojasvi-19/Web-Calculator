@@ -10,6 +10,31 @@ pipeline {
             }
         }
 
+        stage('Install Python Dependencies') {
+            steps {
+                sh '''
+                python3 --version
+                pip3 install --upgrade pip
+                pip3 install -r requirements.txt
+                pip3 install pyinstaller
+                '''
+            }
+        }
+
+        stage('Build Binary using PyInstaller') {
+            steps {
+                sh '''
+                pyinstaller --clean --onefile Calculator.py
+                '''
+            }
+        }
+
+        stage('Archive PyInstaller Artifact') {
+            steps {
+                archiveArtifacts artifacts: 'dist/*', fingerprint: true
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t web-calculator:${BUILD_NUMBER} .'
@@ -39,4 +64,5 @@ pipeline {
         }
     }
 }
+
 
