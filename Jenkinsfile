@@ -10,28 +10,14 @@ pipeline {
             }
         }
 
-        stage('Verify Files') {
+        stage('Deliver') {
             steps {
-                sh '''
-                echo "Workspace contents:"
-                ls -la
-                '''
+                sh "pyinstaller --onefile sources/add2vals.py"
             }
-        }
-
-        stage('Build Executable with PyInstaller') {
-            steps {
-                sh '''
-                docker run --rm \
-                  -v "$PWD":/app \
-                  -w /app \
-                  python:3.10-slim sh -c "
-                    apt-get update &&
-                    apt-get install -y binutils &&
-                    pip install --no-cache-dir pyinstaller &&
-                    pyinstaller --onefile Calculator.py
-                  "
-                '''
+            post {
+                success {
+                    archiveArtifacts 'dist/add2vals'
+                }
             }
         }
 
