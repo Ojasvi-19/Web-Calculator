@@ -13,12 +13,11 @@ pipeline {
         stage('Install Python Dependencies') {
             steps {
                 sh '''
-                python --version
-                python -m ensurepip --upgrade || true
-                python -m pip install --upgrade pip
-                python -m pip install -r requirements.txt
-                python -m pip install pyinstaller
-
+                python3 --version
+                python3 -m ensurepip --upgrade || true
+                python3 -m pip install --upgrade pip
+                python3 -m pip install -r requirements.txt
+                python3 -m pip install pyinstaller
                 '''
             }
         }
