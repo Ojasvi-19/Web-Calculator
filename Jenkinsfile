@@ -10,33 +10,31 @@ pipeline {
             }
         }
 
-        stage('Verify Workspace Files') {
+        stage('Verify Workspace') {
             steps {
                 sh '''
-                    echo "Workspace is: $WORKSPACE"
-                    pwd
-                    ls -R
+                echo "Workspace path:"
+                pwd
+                echo "Workspace contents:"
+                ls -R
                 '''
             }
         }
 
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t web-calculator:${BUILD_NUMBER} .'
-            }
-        }
-
-        stage('Run Unit Tests & Coverage') {
+        stage('Build Executable with PyInstaller') {
             steps {
                 sh '''
                 docker run --rm \
-                web-calculator:${BUILD_NUMBER} \
-                pytest tests \
-                --cov \
-                --cov-report=term
+                  -v "$WORKSPACE:/app" \
+                  -w /app \
+                  python:3.10-slim sh -c "
+                    pip install --no-cache-dir pyinstaller &&
+                    pyinstaller --onefile Calculator.py
+                  "
                 '''
             }
         }
+    }
 
     post {
         success {
@@ -47,6 +45,7 @@ pipeline {
         }
     }
 }
+
 
 
 
