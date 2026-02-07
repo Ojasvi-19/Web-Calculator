@@ -13,7 +13,7 @@ pipeline {
         stage('Build Binary (PyInstaller)') {
             steps {
                 script {
-                    docker.image('python:3.10-slim').inside("-u root -v ${env.WORKSPACE}:/workspace") {
+                    docker.image('python:3.10-slim').inside("-u root -v /host/path/Calculator:/workspace"){
                         sh '''
                         cd /workspace/Web-Calculator
                         python3 -m pip install --upgrade pip
