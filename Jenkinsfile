@@ -13,9 +13,9 @@ pipeline {
         stage('Verify Workspace') {
             steps {
                 sh '''
-                echo "Workspace path:"
+                echo "=== Jenkins workspace ==="
                 pwd
-                echo "Workspace contents:"
+                echo "=== Jenkins workspace contents ==="
                 ls -l
                 '''
             }
@@ -26,16 +26,25 @@ pipeline {
                 sh '''
                 docker run --rm \
                   -v "$WORKSPACE:/app" \
-                  -w /app \
-                  python:3.10-slim sh -c "
-                    set -e &&
-                    apt-get update &&
-                    apt-get install -y binutils &&
-                    pip install --no-cache-dir pyinstaller &&
-                    echo 'Files inside container:' &&
-                    ls -l &&
-                    pyinstaller --onefile ./Calculator.py
-                  "
+                  python:3.10-slim sh -c '
+                    set -e
+                    echo "=== Inside container ==="
+                    pwd
+                    ls -l /app
+
+                    cd /app
+
+                    if [ ! -f Calculator.py ]; then
+                      echo "Calculator.py NOT FOUND in /app"
+                      exit 1
+                    fi
+
+                    apt-get update
+                    apt-get install -y binutils
+                    pip install --no-cache-dir pyinstaller
+
+                    pyinstaller --onefile Calculator.py
+                  '
                 '''
             }
         }
@@ -75,6 +84,7 @@ pipeline {
         }
     }
 }
+
 
 
 
