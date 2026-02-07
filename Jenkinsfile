@@ -10,24 +10,19 @@ pipeline {
             }
         }
 
-        stage('Install Python Dependencies') {
+        stage('Build Binary using PyInstaller (Docker)') {
             steps {
                 sh '''
-                python3 --version
-                apt-get update
-                apt-get install -y python3-pip
-                pip3 --version
-                pip3 install --upgrade pip
-                pip3 install -r requirements.txt
-                pip3 install pyinstaller
-                '''
-            }
-        }
-
-        stage('Build Binary using PyInstaller') {
-            steps {
-                sh '''
-                pyinstaller --clean --onefile Calculator.py
+                docker run --rm \
+                -v $(pwd):/app \
+                -w /app \
+                python:3.9-slim \
+                sh -c "
+                pip install --upgrade pip &&
+                pip install -r Requirements.txt &&
+                pip install pyinstaller &&
+                pyinstaller --clean --onefile calculator.py
+                "
                 '''
             }
         }
