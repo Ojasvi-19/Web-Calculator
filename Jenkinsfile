@@ -12,11 +12,11 @@ pipeline {
 
         stage('Build Binary (PyInstaller)') {
             steps {
-                dir("/path/to/Calculator/Web-Calculator") {
+                dir('Web-Calculator') {
                     sh '''
                     python3 -m pip install --upgrade pip
                     pip install -r Requirements.txt
-                    pyinstaller --onefile --add-data "templates:templates" Calculator.py
+                    pyinstaller --onefile --add-data "templates:templates" --add-data "static:static" --name CalculatorApp Calculator.py
                     '''
                 }
             }
@@ -24,7 +24,7 @@ pipeline {
 
         stage('Archive PyInstaller Artifact') {
             steps {
-                archiveArtifacts artifacts: 'dist/*', fingerprint: true
+                archiveArtifacts artifacts: 'Web-Calculator/dist/*', fingerprint: true
             }
         }
 
@@ -57,5 +57,6 @@ pipeline {
         }
     }
 }
+
 
 
