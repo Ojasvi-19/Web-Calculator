@@ -1,21 +1,26 @@
-#use an official python runtime as a parent image
-FROM python:3.13-slim
+# Use an official Python runtime as a parent image
+FROM python:3.10-slim
 
-# set the working directory in the container
+# Set the working directory in the container
 WORKDIR /Calculator
 
-#Copy the current directory content into the container at /app
+# Copy project files into the container
 COPY . /Calculator
 
-#Install any needed packages specified in requirements.txt
+# Install system dependencies (needed for PyInstaller & some Python libs)
+RUN apt-get update && \
+    apt-get install -y binutils && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
 RUN pip install --no-cache-dir -r Requirements.txt
 
-#Make port 5000 available to the world outside this container
+# Expose Flask port
 EXPOSE 5000
 
 # Define environment variable
 ENV FLASK_APP=Calculator.py
+ENV FLASK_RUN_HOST=0.0.0.0
 
-#Run the flask app
-#CMD ["python", "Calculator.py"]
-CMD ["flask", "run", "--host=0.0.0.0"]
+# Run the Flask app
+CMD ["flask", "run"]
