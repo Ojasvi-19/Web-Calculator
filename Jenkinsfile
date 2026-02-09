@@ -13,8 +13,9 @@ pipeline {
         stage('Verify Workspace') {
             steps {
                 sh '''
-                echo "Workspace:"
+                echo "Workspace root:"
                 pwd
+                echo "Workspace contents:"
                 ls -l
                 '''
             }
@@ -27,7 +28,13 @@ pipeline {
                         sh '''
                         set -e
 
-                        echo "Inside container:"
+                        echo "Inside container"
+                        pwd
+                        ls -l
+
+                        cd Web-Calculator
+
+                        echo "After cd:"
                         pwd
                         ls -l
 
@@ -35,6 +42,7 @@ pipeline {
                           echo "Calculator.py NOT FOUND"
                           exit 1
                         fi
+
                         apt-get update
                         apt-get install -y binutils
                         pip install --no-cache-dir pyinstaller
@@ -48,7 +56,10 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t web-calculator:${BUILD_NUMBER} .'
+                sh '''
+                cd Web-Calculator
+                docker build -t web-calculator:${BUILD_NUMBER} .
+                '''
             }
         }
 
@@ -67,7 +78,7 @@ pipeline {
 
         stage('Archive Executable') {
             steps {
-                archiveArtifacts artifacts: 'dist/*', fingerprint: true
+                archiveArtifacts artifacts: 'Web-Calculator/dist/*', fingerprint: true
             }
         }
     }
@@ -81,6 +92,7 @@ pipeline {
         }
     }
 }
+
 
 
 
