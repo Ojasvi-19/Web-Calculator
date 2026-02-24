@@ -67,6 +67,38 @@ pipeline {
             }
         }
 
+        stage('Run Selenium Tests') {
+            steps {
+                script {
+                    docker.image('python:3.10-slim').inside {
+                        sh '''
+                        set -e
+                        apt-get update
+                        apt-get install -y chromium chromium-driver
+
+                        pip install --no-cache-dir -r Requirements.txt
+                        pip install selenium pytest
+
+                        pytest tests/selenium --disable-warnings --maxfail=1
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Run JMeter Performance Tests') {
+            steps {
+                sh '''
+                docker run --rm \
+                  -v "$PWD/jmeter:/jmeter" \
+                  justb4/jmeter \
+                  -n \
+                  -t /jmeter/calculator_test.jmx \
+                  -l /jmeter/results.jtl
+                '''
+            }
+        }
+
         stage('Archive Executable') {
             steps {
                 archiveArtifacts artifacts: 'dist/*', fingerprint: true
