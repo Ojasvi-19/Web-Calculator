@@ -31,15 +31,12 @@ pipeline {
                         pwd
                         ls -l
 
-                        if [ ! -f Calculator.py ]; then
-                          echo "Calculator.py NOT FOUND"
-                          exit 1
-                        fi
-
                         apt-get update
                         apt-get install -y binutils
-                        pip install --no-cache-dir -r Requirements.txt
-                        pip install --no-cache-dir pyinstaller
+
+                        pip install --upgrade pip
+                        pip install -r Requirements.txt
+                        pip install pyinstaller
 
                         pyinstaller --onefile Calculator.py
                         '''
@@ -67,25 +64,30 @@ pipeline {
             }
         }
 
-        
         stage('Run Selenium UI Tests') {
             steps {
                 script {
-                    docker.image('selenium/standalone-chrome:latest').inside('--shm-size=2g') {
+                    docker.image('python:3.10-slim').inside('--shm-size=2g') {
                         sh '''
-                            echo "Starting Selenium UI Tests..."
+                        set -e
 
-                            python3 -m pip install --upgrade pip
-                            pip install -r Requirements.txt
+                        echo "Installing system dependencies..."
+                        apt-get update
+                        apt-get install -y chromium chromium-driver curl
 
-                            cd Web-Calculator
+                        echo "Installing Python dependencies..."
+                        pip install --upgrade pip
+                        pip install selenium pytest flask
 
-                            echo "Listing Selenium tests:"
-                            ls tests/selenium
+                        echo "Starting Flask app..."
+                        python Calculator.py &
 
-                            pytest tests/selenium \
-                                --disable-warnings \
-                                --maxfail=1
+                        sleep 5
+
+                        echo "Running Selenium tests..."
+                        pytest tests/selenium \
+                            --disable-warnings \
+                            --maxfail=1
                         '''
                     }
                 }
