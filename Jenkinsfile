@@ -27,7 +27,7 @@ pipeline {
                         sh '''
                         set -e
 
-                        echo "Inside container:"
+                        echo "Inside PyInstaller container"
                         pwd
                         ls -l
 
@@ -60,6 +60,7 @@ pipeline {
                 docker run --rm \
                   web-calculator:${BUILD_NUMBER} \
                   pytest tests \
+                  --ignore=tests/selenium \
                   --cov=Calculator_ops \
                   --cov-report=term \
                   --cov-report=xml
@@ -72,20 +73,31 @@ pipeline {
                 script {
                     sh '''
                     echo "Starting Calculator app container"
-                    docker run -d --name calc-app -p 5000:5000 web-calculator:${BUILD_NUMBER}
+                    docker run -d --name calc-app \
+                      -p 5000:5000 \
+                      web-calculator:${BUILD_NUMBER}
 
-                    sleep 5
+                    echo "Waiting for app to start..."
+                    sleep 10
+                    '''
 
-                    echo "Running Selenium Tests"
-                    docker run --rm \
-                      --network host \
-                      -v "$PWD/tests:/tests" \
-                      python:3.10-slim \
-                      bash -c "
-                        pip install selenium pytest webdriver-manager &&
-                        pytest /tests/selenium
-                      "
+                    docker.image('selenium/standalone-chrome:latest')
+                          .inside('--shm-size=2g --network container:calc-app') {
+                        sh '''
+                        echo "Running Selenium UI Tests"
 
+                        python3 -m pip install --upgrade pip
+                        pip install selenium pytest flask
+
+                        ls tests/selenium
+
+                        pytest tests/selenium \
+                          --disable-warnings \
+                          --maxfail=1
+                        '''
+                    }
+
+                    sh '''
                     echo "Stopping Calculator app container"
                     docker rm -f calc-app
                     '''
@@ -96,14 +108,6 @@ pipeline {
         stage('Run JMeter Performance Tests') {
             steps {
                 sh '''
-                echo "Checking JMeter files"
-                ls -l jmeter || true
-
-                if [ ! -f jmeter/calculator_test.jmx ]; then
-                    echo "ERROR: jmeter/calculator_test.jmx NOT FOUND"
-                    exit 1
-                fi
-
                 echo "Running JMeter Performance Tests"
 
                 docker run --rm \
