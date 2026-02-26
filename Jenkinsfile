@@ -76,11 +76,16 @@ pipeline {
                         apt-get update
                         apt-get install -y chromium chromium-driver
 
-                        pip install --no-cache-dir -r Requirements.txt
+                        pip install -r Web-Calculator/Requirements.txt
                         pip install selenium pytest
 
-                        pytest tests/selenium --disable-warnings --maxfail=1
-                        '''
+                        cd Web-Calculator
+
+                        python Calculator.py &
+                        sleep 5
+
+                       pytest tests/selenium --disable-warnings --maxfail=1
+                       '''
                     }
                 }
             }
