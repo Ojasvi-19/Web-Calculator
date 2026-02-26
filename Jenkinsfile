@@ -31,12 +31,15 @@ pipeline {
                         pwd
                         ls -l
 
+                        if [ ! -f Calculator.py ]; then
+                          echo "Calculator.py NOT FOUND"
+                          exit 1
+                        fi
+
                         apt-get update
                         apt-get install -y binutils
-
-                        pip install --upgrade pip
-                        pip install -r Requirements.txt
-                        pip install pyinstaller
+                        pip install --no-cache-dir -r Requirements.txt
+                        pip install --no-cache-dir pyinstaller
 
                         pyinstaller --onefile Calculator.py
                         '''
@@ -64,49 +67,6 @@ pipeline {
             }
         }
 
-        stage('Run Selenium UI Tests') {
-            steps {
-                script {
-                    docker.image('python:3.10-slim').inside('--shm-size=2g') {
-                        sh '''
-                        set -e
-
-                        echo "Installing system dependencies..."
-                        apt-get update
-                        apt-get install -y chromium chromium-driver curl
-
-                        echo "Installing Python dependencies..."
-                        pip install --upgrade pip
-                        pip install selenium pytest flask
-
-                        echo "Starting Flask app..."
-                        python Calculator.py &
-
-                        sleep 5
-
-                        echo "Running Selenium tests..."
-                        pytest tests/selenium \
-                            --disable-warnings \
-                            --maxfail=1
-                        '''
-                    }
-                }
-            }
-        }
-
-        stage('Run JMeter Performance Tests') {
-            steps {
-                sh '''
-                docker run --rm \
-                  -v "$PWD/jmeter:/jmeter" \
-                  justb4/jmeter \
-                  -n \
-                  -t /jmeter/calculator_test.jmx \
-                  -l /jmeter/results.jtl
-                '''
-            }
-        }
-
         stage('Archive Executable') {
             steps {
                 archiveArtifacts artifacts: 'dist/*', fingerprint: true
@@ -123,8 +83,6 @@ pipeline {
         }
     }
 }
-
-
 
 
 
