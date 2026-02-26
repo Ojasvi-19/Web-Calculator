@@ -67,22 +67,25 @@ pipeline {
             }
         }
 
-        stage('Run Selenium Tests') {
+        
+        stage('Run Selenium UI Tests') {
             steps {
                 script {
-                    docker.image('python:3.10-slim').inside {
+                    docker.image('selenium/standalone-chrome:latest').inside('--shm-size=2g') {
                         sh '''
-                        set -e
-                        apt-get update
-                        apt-get install -y chromium chromium-driver
+                            echo "Starting Selenium UI Tests..."
 
-                        pip install -r Requirements.txt
-                        pip install selenium pytest
+                            python3 -m pip install --upgrade pip
+                            pip install -r Requirements.txt
 
-                        python Calculator.py &
-                        sleep 5
+                            cd Web-Calculator
 
-                        pytest tests/selenium --disable-warnings --maxfail=1
+                            echo "Listing Selenium tests:"
+                            ls tests/selenium
+
+                            pytest tests/selenium \
+                                --disable-warnings \
+                                --maxfail=1
                         '''
                     }
                 }
