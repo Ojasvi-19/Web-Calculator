@@ -3,6 +3,9 @@ pipeline {
 
     stages {
 
+        /* =========================
+           1. CHECKOUT CODE
+        ========================== */
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
@@ -10,6 +13,9 @@ pipeline {
             }
         }
 
+        /* =========================
+           2. VERIFY WORKSPACE
+        ========================== */
         stage('Verify Workspace') {
             steps {
                 sh '''
@@ -20,6 +26,9 @@ pipeline {
             }
         }
 
+        /* =========================
+           3. BUILD EXECUTABLE
+        ========================== */
         stage('Build Executable with PyInstaller') {
             steps {
                 script {
@@ -48,12 +57,18 @@ pipeline {
             }
         }
 
+        /* =========================
+           4. BUILD DOCKER IMAGE
+        ========================== */
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t web-calculator:${BUILD_NUMBER} .'
             }
         }
 
+        /* =========================
+           5. UNIT TESTS (NO SELENIUM)
+        ========================== */
         stage('Run Unit Tests & Coverage') {
             steps {
                 sh '''
@@ -68,18 +83,30 @@ pipeline {
             }
         }
 
+        /* =========================
+           6. SELENIUM UI TESTS
+        ========================== */
         stage('Run Selenium UI Tests') {
             steps {
                 script {
+                    sh '''
+                    echo "Starting Calculator app container"
+                    docker run -d --name calc-app \
+                      -p 5000:5000 \
+                      web-calculator:${BUILD_NUMBER}
+
+                    echo "Waiting for app to start..."
+                    sleep 10
+                    '''
+
                     docker.image('selenium/standalone-chrome:latest')
-                          .inside('--shm-size=2g') {
+                          .inside('--shm-size=2g --network container:calc-app') {
                         sh '''
                         echo "Running Selenium UI Tests"
 
                         python3 -m pip install --upgrade pip
                         pip install selenium pytest flask
 
-                        echo "Selenium tests found:"
                         ls tests/selenium
 
                         pytest tests/selenium \
@@ -87,10 +114,18 @@ pipeline {
                           --maxfail=1
                         '''
                     }
+
+                    sh '''
+                    echo "Stopping Calculator app container"
+                    docker rm -f calc-app
+                    '''
                 }
             }
         }
 
+        /* =========================
+           7. JMETER PERFORMANCE TESTS
+        ========================== */
         stage('Run JMeter Performance Tests') {
             steps {
                 sh '''
@@ -106,6 +141,9 @@ pipeline {
             }
         }
 
+        /* =========================
+           8. ARCHIVE EXECUTABLE
+        ========================== */
         stage('Archive Executable') {
             steps {
                 archiveArtifacts artifacts: 'dist/*', fingerprint: true
@@ -122,7 +160,6 @@ pipeline {
         }
     }
 }
-
 
 
 
