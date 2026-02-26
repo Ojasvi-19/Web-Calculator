@@ -79,8 +79,6 @@ pipeline {
                         pip install -r Requirements.txt
                         pip install selenium pytest
 
-                        cd Web-Calculator
-
                         python Calculator.py &
                         sleep 5
 
