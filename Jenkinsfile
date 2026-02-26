@@ -27,7 +27,7 @@ pipeline {
                         sh '''
                         set -e
 
-                        echo "Inside container:"
+                        echo "Inside PyInstaller container"
                         pwd
                         ls -l
 
@@ -60,9 +60,48 @@ pipeline {
                 docker run --rm \
                   web-calculator:${BUILD_NUMBER} \
                   pytest tests \
+                  --ignore=tests/selenium \
                   --cov=Calculator_ops \
                   --cov-report=term \
                   --cov-report=xml
+                '''
+            }
+        }
+
+        stage('Run Selenium UI Tests') {
+            steps {
+                script {
+                    docker.image('selenium/standalone-chrome:latest')
+                          .inside('--shm-size=2g') {
+                        sh '''
+                        echo "Running Selenium UI Tests"
+
+                        python3 -m pip install --upgrade pip
+                        pip install selenium pytest flask
+
+                        echo "Selenium tests found:"
+                        ls tests/selenium
+
+                        pytest tests/selenium \
+                          --disable-warnings \
+                          --maxfail=1
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Run JMeter Performance Tests') {
+            steps {
+                sh '''
+                echo "Running JMeter Performance Tests"
+
+                docker run --rm \
+                  -v "$PWD/jmeter:/jmeter" \
+                  justb4/jmeter \
+                  -n \
+                  -t /jmeter/calculator_test.jmx \
+                  -l /jmeter/results.jtl
                 '''
             }
         }
@@ -83,7 +122,6 @@ pipeline {
         }
     }
 }
-
 
 
 
