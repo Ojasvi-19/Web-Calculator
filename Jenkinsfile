@@ -3,9 +3,6 @@ pipeline {
 
     stages {
 
-        /* =========================
-           1. CHECKOUT CODE
-        ========================== */
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
@@ -13,9 +10,6 @@ pipeline {
             }
         }
 
-        /* =========================
-           2. VERIFY WORKSPACE
-        ========================== */
         stage('Verify Workspace') {
             steps {
                 sh '''
@@ -26,9 +20,6 @@ pipeline {
             }
         }
 
-        /* =========================
-           3. BUILD EXECUTABLE
-        ========================== */
         stage('Build Executable with PyInstaller') {
             steps {
                 script {
@@ -36,7 +27,7 @@ pipeline {
                         sh '''
                         set -e
 
-                        echo "Inside PyInstaller container"
+                        echo "Inside container:"
                         pwd
                         ls -l
 
@@ -57,25 +48,18 @@ pipeline {
             }
         }
 
-        /* =========================
-           4. BUILD DOCKER IMAGE
-        ========================== */
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t web-calculator:${BUILD_NUMBER} .'
             }
         }
 
-        /* =========================
-           5. UNIT TESTS (NO SELENIUM)
-        ========================== */
         stage('Run Unit Tests & Coverage') {
             steps {
                 sh '''
                 docker run --rm \
                   web-calculator:${BUILD_NUMBER} \
                   pytest tests \
-                  --ignore=tests/selenium \
                   --cov=Calculator_ops \
                   --cov-report=term \
                   --cov-report=xml
@@ -83,39 +67,25 @@ pipeline {
             }
         }
 
-        /* =========================
-           6. SELENIUM UI TESTS
-        ========================== */
         stage('Run Selenium UI Tests') {
             steps {
                 script {
                     sh '''
                     echo "Starting Calculator app container"
-                    docker run -d --name calc-app \
-                      -p 5000:5000 \
-                      web-calculator:${BUILD_NUMBER}
+                    docker run -d --name calc-app -p 5000:5000 web-calculator:${BUILD_NUMBER}
 
-                    echo "Waiting for app to start..."
-                    sleep 10
-                    '''
+                    sleep 5
 
-                    docker.image('selenium/standalone-chrome:latest')
-                          .inside('--shm-size=2g --network container:calc-app') {
-                        sh '''
-                        echo "Running Selenium UI Tests"
+                    echo "Running Selenium Tests"
+                    docker run --rm \
+                      --network host \
+                      -v "$PWD/tests:/tests" \
+                      python:3.10-slim \
+                      bash -c "
+                        pip install selenium pytest webdriver-manager &&
+                        pytest /tests/selenium
+                      "
 
-                        python3 -m pip install --upgrade pip
-                        pip install selenium pytest flask
-
-                        ls tests/selenium
-
-                        pytest tests/selenium \
-                          --disable-warnings \
-                          --maxfail=1
-                        '''
-                    }
-
-                    sh '''
                     echo "Stopping Calculator app container"
                     docker rm -f calc-app
                     '''
@@ -123,12 +93,17 @@ pipeline {
             }
         }
 
-        /* =========================
-           7. JMETER PERFORMANCE TESTS
-        ========================== */
         stage('Run JMeter Performance Tests') {
             steps {
                 sh '''
+                echo "Checking JMeter files"
+                ls -l jmeter || true
+
+                if [ ! -f jmeter/calculator_test.jmx ]; then
+                    echo "ERROR: jmeter/calculator_test.jmx NOT FOUND"
+                    exit 1
+                fi
+
                 echo "Running JMeter Performance Tests"
 
                 docker run --rm \
@@ -141,9 +116,6 @@ pipeline {
             }
         }
 
-        /* =========================
-           8. ARCHIVE EXECUTABLE
-        ========================== */
         stage('Archive Executable') {
             steps {
                 archiveArtifacts artifacts: 'dist/*', fingerprint: true
