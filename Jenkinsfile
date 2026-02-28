@@ -105,11 +105,17 @@ pipeline {
             }
         }
 
-        /* 🔧 FIXED JMETER STAGE (ONLY CHANGE) */
         stage('Run JMeter Performance Tests') {
             steps {
                 sh '''
                 echo "Running JMeter Performance Tests"
+
+                echo "Workspace contents:"
+                pwd
+                ls -l
+
+                echo "Checking JMeter folder:"
+                ls -l jmeter
 
                 docker run --rm \
                   -v ${WORKSPACE}/jmeter:/jmeter \
