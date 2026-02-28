@@ -105,22 +105,31 @@ pipeline {
             }
         }
 
+        /* =========================
+           FIXED & CORRECT JMeter STAGE
+           ========================= */
         stage('Run JMeter Performance Tests') {
             steps {
                 sh '''
-                    echo "Running JMeter Performance Tests"
+                echo "Running JMeter Performance Tests"
 
-                    docker run --rm \
-                      --entrypoint sh \
-                      -v ${WORKSPACE}/jmeter:/jmeter \
-                      justb4/jmeter \
-                      -c "
-                        echo 'Inside JMeter container';
-                        ls -l /jmeter;
-                        jmeter -n \
-                          -t /jmeter/calculator_test.jmx \
-                          -l /jmeter/results.jtl
-                      "
+                echo "Workspace:"
+                pwd
+
+                echo "Checking JMeter files:"
+                ls -l ${WORKSPACE}/jmeter
+
+                docker run --rm \
+                  --entrypoint sh \
+                  -v ${WORKSPACE}/jmeter:/jmeter \
+                  justb4/jmeter \
+                  -c "
+                    echo 'Inside JMeter container';
+                    ls -l /jmeter;
+                    jmeter -n \
+                      -t /jmeter/calculator_test.jmx \
+                      -l /jmeter/results.jtl
+                  "
                 '''
             }
         }
@@ -141,6 +150,7 @@ pipeline {
         }
     }
 }
+
 
 
 
