@@ -108,21 +108,19 @@ pipeline {
         stage('Run JMeter Performance Tests') {
             steps {
                 sh '''
-                echo "Running JMeter Performance Tests"
+                    echo "Running JMeter Performance Tests"
 
-                echo "Workspace contents:"
-                pwd
-                ls -l
-
-                echo "Checking JMeter folder:"
-                ls -l jmeter
-
-                docker run --rm \
-                  -v ${WORKSPACE}/jmeter:/jmeter \
-                  justb4/jmeter \
-                  -n \
-                  -t /jmeter/calculator_test.jmx \
-                  -l /jmeter/results.jtl
+                    docker run --rm \
+                      --entrypoint sh \
+                      -v ${WORKSPACE}/jmeter:/jmeter \
+                      justb4/jmeter \
+                      -c "
+                        echo 'Inside JMeter container';
+                        ls -l /jmeter;
+                        jmeter -n \
+                          -t /jmeter/calculator_test.jmx \
+                          -l /jmeter/results.jtl
+                      "
                 '''
             }
         }
