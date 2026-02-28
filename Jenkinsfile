@@ -103,24 +103,25 @@ pipeline {
             }
         }
 
-        /* ✅ FIXED JMeter STAGE — THIS IS THE ONLY CHANGE */
         stage('Run JMeter Performance Tests') {
             steps {
-                sh '''
-                echo "Running JMeter Performance Tests"
+                script {
+                    docker.image('justb4/jmeter:latest').inside {
+                        sh '''
+                        echo "Running JMeter Performance Tests"
 
-                echo "Workspace:"
-                pwd
-                ls -l
+                        echo "Workspace:"
+                        pwd
 
-                docker run --rm \
-                  --network container:calc-app \
-                  -v ${WORKSPACE}:${WORKSPACE} \
-                  justb4/jmeter:latest \
-                  -n \
-                  -t ${WORKSPACE}/jmeter/calculator_test.jmx \
-                  -l ${WORKSPACE}/jmeter/results.jtl
-                '''
+                        echo "Checking JMeter files:"
+                        ls -l jmeter
+
+                        jmeter -n \
+                          -t jmeter/calculator_test.jmx \
+                          -l jmeter/results.jtl
+                        '''
+                    }
+                }
             }
         }
 
@@ -137,10 +138,10 @@ pipeline {
         }
         failure {
             echo "Pipeline failed"
+
         }
     }
 }
-
 
 
 
