@@ -110,8 +110,11 @@ pipeline {
                 sh '''
                 echo "Running JMeter Performance Tests"
 
+                echo "Checking JMeter files:"
+                ls -l ${WORKSPACE}/jmeter
+
                 docker run --rm \
-                  -v "$PWD/jmeter:/jmeter" \
+                  -v ${WORKSPACE}/jmeter:/jmeter \
                   justb4/jmeter \
                   -n \
                   -t /jmeter/calculator_test.jmx \
