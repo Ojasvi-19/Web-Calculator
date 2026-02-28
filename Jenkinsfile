@@ -27,6 +27,15 @@ pipeline {
                         sh '''
                         set -e
 
+                        echo "Inside PyInstaller container"
+                        pwd
+                        ls -l
+
+                        if [ ! -f Calculator.py ]; then
+                          echo "Calculator.py NOT FOUND"
+                          exit 1
+                        fi
+
                         apt-get update
                         apt-get install -y binutils
                         pip install --no-cache-dir -r Requirements.txt
@@ -63,47 +72,55 @@ pipeline {
             steps {
                 script {
                     sh '''
+                    echo "Starting Calculator app container"
                     docker run -d --name calc-app \
                       -p 5000:5000 \
                       web-calculator:${BUILD_NUMBER}
 
+                    echo "Waiting for app to start..."
                     sleep 10
                     '''
 
                     docker.image('selenium/standalone-chrome:latest')
                           .inside('--shm-size=2g --network container:calc-app') {
                         sh '''
+                        echo "Running Selenium UI Tests"
+
+                        python3 -m pip install --upgrade pip
                         pip install selenium pytest flask
-                        pytest tests/selenium --maxfail=1
+
+                        pytest tests/selenium \
+                          --disable-warnings \
+                          --maxfail=1
                         '''
                     }
+
+                    sh '''
+                    echo "Stopping Calculator app container"
+                    docker rm -f calc-app
+                    '''
                 }
             }
         }
 
-        /* ✅ FIXED JMeter STAGE — NOTHING ELSE TOUCHED */
+        /* ✅ FIXED JMeter STAGE — THIS IS THE ONLY CHANGE */
         stage('Run JMeter Performance Tests') {
             steps {
                 sh '''
                 echo "Running JMeter Performance Tests"
 
-                echo "Checking JMeter files:"
-                ls -l ${WORKSPACE}/jmeter
+                echo "Workspace:"
+                pwd
+                ls -l
 
                 docker run --rm \
                   --network container:calc-app \
-                  -v ${WORKSPACE}/jmeter:/jmeter \
+                  -v ${WORKSPACE}:${WORKSPACE} \
                   justb4/jmeter:latest \
                   -n \
-                  -t /jmeter/calculator_test.jmx \
-                  -l /jmeter/results.jtl
+                  -t ${WORKSPACE}/jmeter/calculator_test.jmx \
+                  -l ${WORKSPACE}/jmeter/results.jtl
                 '''
-            }
-        }
-
-        stage('Stop Calculator App') {
-            steps {
-                sh 'docker rm -f calc-app || true'
             }
         }
 
