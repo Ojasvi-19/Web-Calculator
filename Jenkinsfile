@@ -89,7 +89,9 @@ pipeline {
                         python3 -m pip install --upgrade pip
                         pip install selenium pytest flask
 
-                        pytest tests/selenium --disable-warnings --maxfail=1
+                        pytest tests/selenium \
+                          --disable-warnings \
+                          --maxfail=1
                         '''
                     }
 
@@ -101,7 +103,6 @@ pipeline {
             }
         }
 
-        /* ✅ FIXED JMeter STAGE — NOTHING ELSE TOUCHED */
         stage('Run JMeter Performance Tests') {
             steps {
                 sh '''
@@ -114,6 +115,7 @@ pipeline {
                 ls -l "$WORKSPACE/jmeter"
 
                 docker run --rm \
+                  --user root \
                   -v "$WORKSPACE/jmeter:/jmeter" \
                   justb4/jmeter:latest \
                   -n \
