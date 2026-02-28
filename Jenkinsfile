@@ -105,9 +105,7 @@ pipeline {
             }
         }
 
-        /* =========================
-           FIXED & CORRECT JMeter STAGE
-           ========================= */
+        /* 🔧 ONLY THIS STAGE IS FIXED */
         stage('Run JMeter Performance Tests') {
             steps {
                 sh '''
@@ -117,19 +115,14 @@ pipeline {
                 pwd
 
                 echo "Checking JMeter files:"
-                ls -l ${WORKSPACE}/jmeter
+                ls -l jmeter
 
                 docker run --rm \
-                  --entrypoint sh \
-                  -v ${WORKSPACE}/jmeter:/jmeter \
+                  -v /var/jenkins_home/workspace/web-calculator-mbp_main/jmeter:/jmeter \
                   justb4/jmeter \
-                  -c "
-                    echo 'Inside JMeter container';
-                    ls -l /jmeter;
-                    jmeter -n \
-                      -t /jmeter/calculator_test.jmx \
-                      -l /jmeter/results.jtl
-                  "
+                  -n \
+                  -t /jmeter/calculator_test.jmx \
+                  -l /jmeter/results.jtl
                 '''
             }
         }
