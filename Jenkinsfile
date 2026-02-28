@@ -105,20 +105,22 @@ pipeline {
             }
         }
 
+        /* 🔧 FIXED JMETER STAGE (ONLY CHANGE) */
         stage('Run JMeter Performance Tests') {
             steps {
                 sh '''
                 echo "Running JMeter Performance Tests"
 
-                echo "Checking JMeter files:"
-                ls -l ${WORKSPACE}/jmeter
-
                 docker run --rm \
                   -v ${WORKSPACE}/jmeter:/jmeter \
                   justb4/jmeter \
-                  -n \
-                  -t /jmeter/calculator_test.jmx \
-                  -l /jmeter/results.jtl
+                  sh -c "
+                    echo 'Inside JMeter container';
+                    ls -l /jmeter;
+                    jmeter -n \
+                      -t /jmeter/calculator_test.jmx \
+                      -l /jmeter/results.jtl
+                  "
                 '''
             }
         }
