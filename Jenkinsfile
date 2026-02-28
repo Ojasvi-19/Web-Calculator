@@ -114,13 +114,9 @@ pipeline {
                 docker run --rm \
                   -v ${WORKSPACE}/jmeter:/jmeter \
                   justb4/jmeter \
-                  sh -c "
-                    echo 'Inside JMeter container';
-                    ls -l /jmeter;
-                    jmeter -n \
-                      -t /jmeter/calculator_test.jmx \
-                      -l /jmeter/results.jtl
-                  "
+                  -n \
+                  -t /jmeter/calculator_test.jmx \
+                  -l /jmeter/results.jtl
                 '''
             }
         }
