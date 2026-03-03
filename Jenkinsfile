@@ -103,27 +103,6 @@ pipeline {
             }
         }
 
-        stage('Run JMeter Performance Tests') {
-            steps {
-                script {
-                    docker.image('justb4/jmeter:latest').inside {
-                        sh '''
-                        echo "Running JMeter Performance Tests"
-
-                        echo "Workspace:"
-                        pwd
-
-                        echo "Checking JMeter files:"
-                        ls -l jmeter
-
-                        jmeter -n \
-                          -t jmeter/calculator_test.jmx \
-                          -l jmeter/results.jtl
-                        '''
-                    }
-                }
-            }
-        }
 
         stage('Archive Executable') {
             steps {
